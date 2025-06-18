@@ -4,7 +4,7 @@ This project involves the architectural transformation of a leading global e-com
 To enhance scalability, agility, and deployment efficiency, the goal of this project is to refactor the monolithic architecture into a microservices-based architecture. This shift will enable the independent development, deployment, and scaling of each core service, ultimately improving system resilience, team productivity, and time-to-market. In this project we would leverage AWS Copilot, Amazon ECS, Docker, and AWS Fargate to achieve this.
 
 ## Objectives
-In this Project, you will deploy a monolithic node.js application to a Docker container, then decouple the application into microservices without any downtime.
+In this Project, a monolithic node.js application will be deployed to a Docker container, then decouple the application into microservices without any downtime.
 The node.js application hosts a simple message board with threads and messages between users.
 
 
@@ -29,15 +29,14 @@ As the foundation of this microservices architecture, AWS Fargate enters the sce
 The integration of AWS Copilot, Amazon ECS, Docker, and AWS Fargate forms a potent alliance, offering organizations the tools needed to successfully break down monolithic barriers, embark on a microservices journey, and unlock the full potential of cloud-native development on the AWS platform. This cohesive ecosystem facilitates a smoother transition and positions businesses to thrive in the ever-evolving landscape of digital innovation.
 
 ## Application Architecture
-### Monolithic Architecture
+### Current Monolithic Architecture
 The entire Node.js application is run in a container as a single service, and each container has the same features as all other containers. If one application feature experiences a spike in demand, the entire architecture must be scaled.
-### Microservices Architecture
+This Architecture often face challenges as they scale, hindering the ability to deploy updates independently.
+### Planned Microservices Architecture
 Each feature of the Node.js application runs as a separate service within its container. The services can scale and be updated independently of the others.
-You will build the container image for your monolithic Node.js application and push it to the Amazon Elastic Container Registry
 
 ### Importance of Microservices
-Traditional monolithic architectures are hard to scale. As an application's code base grows, it becomes complex to update and maintain. Introducing new features, languages, frameworks, and technologies becomes very hard, limiting innovation and new ideas.
-Within a microservices architecture, each application component runs as its service and communicates with other services via a well-defined API. Microservices are built around business capabilities, and each service performs a single function. Microservices can be written using different frameworks and programming languages, and you can deploy them independently, as a single service, or as a group of services.
+Within a microservices architecture, each application component runs as its service and communicates with other services via a well-defined API. Microservices are built around business capabilities, and each service performs a single function. Microservices can be written using different frameworks and programming languages, and can be deployed independently, as a single service, or as a group of services.
 #### Isolation of crashes:
 Even the best engineering organizations can and do have fatal crashes in production. In addition to following all the standard best practices for handling crashes gracefully, one approach that can limit the impact of such crashes is building microservices. Good microservice architecture means that if one micropiece of your service is crashing, then only that part of your service will go down. The rest of your service can continue to work properly.
 
@@ -46,6 +45,58 @@ In a monolithic application, if one feature of the application has a security br
 
 #### Independent scaling: 
 When features are broken out into microservices, then the amount of infrastructure and number of instances used by each microservice class can be scaled up and down independently. This makes it easier to measure the cost of a particular feature and identify features that may need to be optimized first. If one particular feature is having issues with its resource needs, other features will not be impacted, and reliable performance can be maintained.
-Development velocity
 
+#### Development velocity
 Microservices lower the risks in development, which can enable a team to build faster. In a monolith, adding a new feature can potentially impact every other feature that the monolith contains. Developers must carefully consider the impact of any code they add and ensure that they do not break anything. On the other hand, a proper microservices architecture has new code for a new feature going into a new service. Developers can be confident that any code they write will not be able to impact the existing code at all unless they explicitly write a connection between two microservices.
+ 
+## Project Stages
+1. Configure AWS Cli and then install AWS Copilot and Docker on Ubuntu EC2 Instance
+2. Containerize and deploy the monolith imaged as a container running on managed cluster of EC2 compute intstances initiated by AWS Copilot.
+3. Break the monolith: Break the Node.js application into several interconnected services and push each service's image to an Amazon Elastic Container Registry (Amazon ECR) repository.
+4. Deploy microservices: Deploy your Node.js application as a set of interconnected services behind an Application Load Balancer (ALB). Then, you will use the ALB to shift traffic from the monolith to the microservices seamlessly.
+
+
+## INSTALLATION OF AWS CLI, DOCKER AND AWS Copilot on UBUTU EC2 INSTANCE 
+#### Install and configure AWS CLI
+```
+sudo apt install unzip
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+aws configure.
+```
+#### Install and Start docker 
+``` bash
+sudo apt-get update
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl start docker
+sudo systemctl status docker
+```
+##### Add user to the docker group
+$ sudo usermod -aG docker <userid>
+##### Next
+Then swicth to *root user*, giving you full administrative privileges
+```
+sudo -i
+aws configure
+```
+#### Install AWS Copilot 
+The AWS Copilot CLI is a tool for building, releasing, and operating production-ready containerized applications on Amazon ECS (Elastic Container Service).
+```
+curl -Lo copilot https://github.com/aws/copilot-cli/releases/latest/download/copilot-linux && chmod +x copilot && sudo mv copilot /usr/local/bin/copilot && copilot --help
+```
+Then we clone the git repository, which has all the application codes in it.i.e git clone "repostory URL"
+
+
