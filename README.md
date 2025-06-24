@@ -32,8 +32,12 @@ The integration of AWS Copilot, Amazon ECS, Docker, and AWS Fargate forms a pote
 ### Current Monolithic Architecture
 The entire Node.js application is run in a container as a single service, and each container has the same features as all other containers. If one application feature experiences a spike in demand, the entire architecture must be scaled.
 This Architecture often face challenges as they scale, hindering the ability to deploy updates independently.
+![Screenshot 2025-06-24 052423](https://github.com/user-attachments/assets/c95ec09d-bc4c-4d83-a802-27b85df4cf7a)
+
 ### Planned Microservices Architecture
 Each feature of the Node.js application runs as a separate service within its container. The services can scale and be updated independently of the others.
+        ![Screenshot 2025-06-24 053029](https://github.com/user-attachments/assets/f89e50ee-3fe2-41b0-b671-a91fcf5a8bca)
+
 
 ### Importance of Microservices
 Within a microservices architecture, each application component runs as its service and communicates with other services via a well-defined API. Microservices are built around business capabilities, and each service performs a single function. Microservices can be written using different frameworks and programming languages, and can be deployed independently, as a single service, or as a group of services.
@@ -84,7 +88,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 sudo systemctl start docker
 sudo systemctl status docker
 ```
-##### Add user to the docker group
+##### Add user to the docker group (to get priviledge to interact with docker daemon without needing to use sudo command)
 $ sudo usermod -aG docker <userid>
 ##### Next
 Then swicth to *root user*, giving you full administrative privileges
@@ -100,3 +104,28 @@ curl -Lo copilot https://github.com/aws/copilot-cli/releases/latest/download/cop
 Then we clone the git repository, which has all the application codes in it.i.e git clone "repostory URL"
 
 
+## Containerize and Deploy the Monolith
+Containerizing and deploying a monolith involves packaging your entire application and its dependencies into a container, making it portable and easy to deploy across different environments.
+This process provides a scalable and manageable way to run your monolith in a containerized environment. It enhances flexibility and resource utilization and eases deployment and updates.
+### Steps to instantiate a managed cluster of EC2 compute instances and deploy your image as a container running on the cluster
+1. initialize Copilot application into the directory that has the application code.Copilot Application creates an empty application that consists of roles to administrate StackSets, ECR repositories, KMS keys, and S3 buckets. It also creates a local directory in your repository to hold configuration files for your application and services.
+   do this by running the command
+   `` copilot app init `` ![Screenshot (116)](https://github.com/user-attachments/assets/a665ecef-8a3c-4690-ba43-dd074ff563e5)
+     
+2. Next, Create ennvironment where application will run using the command ``copilot env init`` AWS Copilot provides a secure VPC, an Amazon ECS cluster, a Load Balancer, and all the other resources required by the application using the manifest.yaml to configure the environment. ![Screenshot (121)](https://github.com/user-attachments/assets/01da4850-1088-49d9-987e-299883c3235e)![Screenshot (122)](https://github.com/user-attachments/assets/73e1ff57-4bcb-4a2d-87da-e905d399ad99)
+3. Deploy the Environment: This step is to deploy the environment and provision the services for the application. To deploy, enter ``copilot env deploy --name api``  
+4. Create the monolith AWS Copilot Service: This step uses a Load-balanced web Service for the Internet-facing monolith. To create the monolithic service, enter ``copilot svc init`` and choose Load Balanced Web Service. When you run copilot svc init, Copilot will likely prompt you for information such as the service name, service type, and other configuration details specific to the service you are initializing. This command is typically used to set up a new service within your Copilot application, defining how it should be deployed, its dependencies, and any necessary configurations. ![Screenshot (129)](https://github.com/user-attachments/assets/72a54c0e-7073-42e5-a1a7-58c51029defb) then ``cd copilot/monolith`` to Change the directory to /copilot/monolith.
+5. Deploy the monolith AWS Copilot Service: To deploy the monolith Service, enter ``copilot svc deploy --name monolith`` in the terminal. When you deploy the service, the container is built locally by Docker and pushed to your Elastic Container Registry. The service pulls the container from the registry and deploys it in the environment. The monolith application is running when the deployment is complete.![Screenshot (132)](https://github.com/user-attachments/assets/17a503ac-deea-41a5-b422-0694f797e729)  Access your service using the load balancer link
+
+## Break the Monolith
+The Node.js application will be broken into several interconnected services and then create an AWS Copilot Service for each microservice.
+The final application architecture uses Amazon ECS and the Application Load Balancer (ALB).
+![Screenshot 2025-06-24 071508](https://github.com/user-attachments/assets/b71cf68e-ef0a-4025-9c78-ecfd340834ee)
+1. Create the Services: 
+
+We will set up a new microservice named posts as part of a larger application called api, using AWS Copilot by running the command ``copilot svc init --app api --dockerfile ./3-microservices/services/posts/Dockerfile --name posts --svc-type "Load Balanced Web Service" `` . This step involves telling Copilot how to build and deploy the posts service using a specific Dockerfile, and configuring it as a Load Balanced Web Service.  
+
+
+
+
+   
